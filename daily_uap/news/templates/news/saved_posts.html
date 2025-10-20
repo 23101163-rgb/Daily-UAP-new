@@ -1,0 +1,47 @@
+{% extends 'news/base.html' %}
+{% load static %}
+{% block title %}Saved Posts - Daily UAP{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+  <h2 class="mb-4">💾 Your Saved Posts</h2>
+
+  {% if saved %}
+    <div class="row">
+      {% for saved_post in saved %}
+        <div class="col-md-4 mb-4">
+          <div class="card h-100 shadow-sm border-0">
+            {% if saved_post.post.image %}
+              <img src="{{ saved_post.post.image.url }}" class="card-img-top" alt="{{ saved_post.post.title }}">
+            {% endif %}
+
+            <div class="card-body">
+              <h5 class="card-title">{{ saved_post.post.title }}</h5>
+              <p class="text-muted small mb-2">
+                By <strong>{{ saved_post.post.author.username }}</strong>
+                {% if saved_post.post.author.profile.profession %}
+                  — {{ saved_post.post.author.profile.get_profession_display }}
+                {% endif %}
+              </p>
+
+              <p class="card-text">{{ saved_post.post.content|truncatechars:120 }}</p>
+              <a href="{% url 'post_detail' saved_post.post.id %}" class="btn btn-outline-primary btn-sm">Read More</a>
+              <a href="{% url 'unsave_post' saved_post.post.id %}" class="btn btn-outline-danger btn-sm ms-2">Remove</a>
+            </div>
+
+            <div class="card-footer text-muted small">
+              Saved on {{ saved_post.saved_at|date:"F d, Y" }}
+            </div>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <div class="text-center py-5">
+      <img src="{% static 'images/empty-box.png' %}" width="120" class="mb-3" alt="No saved posts">
+      <p class="text-muted">You haven’t saved any posts yet.</p>
+      <a href="{% url 'home' %}" class="btn btn-primary mt-2">📰 Browse Posts</a>
+    </div>
+  {% endif %}
+</div>
+{% endblock %}
