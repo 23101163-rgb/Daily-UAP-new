@@ -1,0 +1,102 @@
+{% extends 'news/base.html' %}
+{% block content %}
+<style>
+  /* 🌙 Bangladeshi flag inspired styles */
+  body.dark-mode .list-group-item a {
+      color: #00ff88;
+      transition: all 0.3s ease;
+  }
+
+  body.dark-mode .list-group-item a:hover {
+      color: #ff2a2a;
+      text-shadow: 0 0 10px #ff2a2a;
+  }
+
+  body.dark-mode h2,
+  body.dark-mode h4 {
+      color: #00ff88;
+      text-shadow: 0 0 8px #009944;
+  }
+
+  .list-group-item {
+      background-color: transparent;
+      border: 1px solid rgba(0, 255, 136, 0.2);
+  }
+
+  .list-group-item:hover {
+      background-color: rgba(0, 255, 136, 0.1);
+  }
+
+  .dashboard-section-title {
+      font-weight: bold;
+      margin-top: 25px;
+  }
+
+  .text-primary {
+      color: #ff2a2a !important;
+      text-shadow: 0 0 8px #ff2a2a;
+  }
+
+  .text-success {
+      color: #00ff88 !important;
+  }
+
+  .text-secondary {
+      color: #cccccc !important;
+  }
+</style>
+
+<div class="container mt-4">
+  <h2>👋 Welcome, {{ profile.user.username }} (Reader)</h2>
+  <p class="text-muted">Profession: {{ profile.get_profession_display }}</p>
+
+  <!-- 🔖 Saved Posts -->
+  <h4 class="dashboard-section-title text-primary">🔖 Saved Posts</h4>
+  {% if saved_posts %}
+    <ul class="list-group mb-4 shadow-sm rounded-3">
+      {% for saved in saved_posts %}
+        <li class="list-group-item d-flex justify-content-between align-items-center">
+          <a href="{% url 'post_detail' saved.post.id %}" class="fw-semibold">{{ saved.post.title }}</a>
+          <small class="text-muted">{{ saved.saved_at|date:"F d, Y" }}</small>
+        </li>
+      {% endfor %}
+    </ul>
+  {% else %}
+    <p class="text-muted fst-italic">No saved posts yet.</p>
+  {% endif %}
+
+  <!-- 💬 My Comments -->
+  <h4 class="dashboard-section-title text-success">💬 My Recent Comments</h4>
+  {% if my_comments %}
+    <ul class="list-group mb-4 shadow-sm rounded-3">
+      {% for comment in my_comments %}
+        <li class="list-group-item">
+          <strong>On:</strong>
+          <a href="{% url 'post_detail' comment.post.id %}" class="fw-semibold">{{ comment.post.title }}</a><br>
+          <em>{{ comment.content }}</em>
+          <div class="text-muted small mt-1">{{ comment.created_at|date:"F d, Y H:i" }}</div>
+        </li>
+      {% endfor %}
+    </ul>
+  {% else %}
+    <p class="text-muted fst-italic">You haven't commented yet.</p>
+  {% endif %}
+
+  <!-- 🕒 Recently Viewed -->
+  <h4 class="dashboard-section-title text-secondary">🕒 Recently Viewed Posts</h4>
+  {% if recent_posts %}
+    <ul class="list-group mb-5 shadow-sm rounded-3">
+      {% for post in recent_posts %}
+        <li class="list-group-item d-flex justify-content-between align-items-center">
+          <a href="{% url 'post_detail' post.id %}" class="fw-semibold">{{ post.title }}</a>
+          {% if post.viewed_at %}
+            <small class="text-muted">{{ post.viewed_at|date:"F d, Y H:i" }}</small>
+          {% endif %}
+        </li>
+      {% endfor %}
+    </ul>
+  {% else %}
+    <p class="text-muted fst-italic">No recent posts found.</p>
+  {% endif %}
+</div>
+{% endblock %}
