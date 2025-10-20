@@ -1,0 +1,162 @@
+{% extends 'news/base.html' %}
+{% block title %}{{ post.title }} - Daily UAP{% endblock %}
+{% block content %}
+
+<div class="container mt-5">
+
+  <!-- 📰 Post Header -->
+  <div class="card border-0 shadow-sm mb-4 bg-dark text-light">
+    {% if post.image %}
+      <img src="{{ post.image.url }}" class="card-img-top rounded-top" alt="{{ post.title }}">
+    {% endif %}
+    <div class="card-body">
+      <h2 class="card-title text-success fw-bold">{{ post.title }}</h2>
+      <p class="text-muted mb-1">
+        By <strong>{{ post.author.username }}</strong> • Published {{ post.published_date|date:"F j, Y" }}
+      </p>
+      <p class="card-text mt-3">{{ post.content|linebreaks }}</p>
+
+      <!-- 💾 Save / Unsave Buttons -->
+      <div class="d-flex justify-content-between align-items-center mt-3">
+        <a href="{% url 'home' %}" class="btn btn-outline-light">← Back to Home</a>
+
+        {% if user.is_authenticated %}
+          {% if is_saved %}
+            <form method="POST" action="{% url 'unsave_post' post.id %}" class="d-inline">
+              {% csrf_token %}
+              <button type="submit" class="btn btn-outline-danger">🗑️ Unsave Post</button>
+            </form>
+          {% else %}
+            <form method="POST" action="{% url 'save_post' post.id %}" class="d-inline">
+              {% csrf_token %}
+              <button type="submit" class="btn btn-outline-success">💾 Save Post</button>
+            </form>
+          {% endif %}
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <!-- 👤 Author Info -->
+  <div class="author-info mt-4">
+    {% if post.author.profile.profile_picture %}
+      <img src="{{ post.author.profile.profile_picture.url }}" alt="{{ post.author.username }}">
+    {% endif %}
+    <div>
+      <div class="author-name">{{ post.author.username }}</div>
+      {% if post.author.profile.profession %}
+        <div class="author-profession">{{ post.author.profile.get_profession_display }}</div>
+      {% else %}
+        <div class="author-profession">Author</div>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- 💬 Comments Section -->
+  <div class="comments-section mt-5">
+    <h4 class="text-success fw-bold mb-3">💬 Discussion Zone</h4>
+
+    {% for comment in comments %}
+    <div class="comment-card mb-4 p-3 rounded-4 shadow-sm border border-success bg-dark text-light">
+      <div class="d-flex justify-content-between align-items-center mb-2">
+        <div>
+          <strong class="text-info fs-5">{{ comment.user.username }}</strong>
+          <span class="text-muted small">• {{ comment.created_at|date:"F d, Y H:i" }}</span>
+        </div>
+        <button class="btn btn-sm btn-outline-success reply-btn" data-comment-id="{{ comment.id }}">
+          ↩️ Reply
+        </button>
+      </div>
+      <p class="mb-3 ps-1">{{ comment.content }}</p>
+
+      <!-- 💚 Reply Form -->
+      <form method="POST" class="reply-form mt-2 ms-2" id="reply-form-{{ comment.id }}" style="display: none;">
+        {% csrf_token %}
+        <textarea name="content" rows="2" class="form-control bg-dark text-light border-success mb-2"
+          placeholder="Write your reply..."></textarea>
+        <input type="hidden" name="parent_id" value="{{ comment.id }}">
+        <button type="submit" class="btn btn-sm btn-success px-3">Reply</button>
+      </form>
+
+      <!-- Nested Replies -->
+      {% for reply in comment.replies.all %}
+      <div class="reply-card mt-3 ms-4 p-2 rounded-3 border-start border-success bg-black text-light">
+        <strong class="text-info">{{ reply.user.username }}</strong>
+        <span class="text-muted small">• {{ reply.created_at|date:"F d, Y H:i" }}</span>
+        <p class="mb-1">{{ reply.content }}</p>
+      </div>
+      {% endfor %}
+    </div>
+    {% empty %}
+    <p class="text-muted text-center">No comments yet. Be the first to share your thoughts!</p>
+    {% endfor %}
+
+    <hr class="border-success my-4">
+
+    <!-- 📝 Add New Comment -->
+    <div class="card bg-dark text-light border border-success shadow-sm p-4">
+      <h5 class="text-success mb-3">Write a Comment</h5>
+      <form method="POST">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit" class="btn btn-success px-4 mt-2">Post Comment</button>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- 💡 Reply Toggle Script -->
+<script>
+  document.querySelectorAll('.reply-btn').forEach(button => {
+    button.addEventListener('click', () => {
+      const form = document.getElementById('reply-form-' + button.dataset.commentId);
+      if (form) {
+        form.style.display = (form.style.display === 'none' || form.style.display === '') ? 'block' : 'none';
+      }
+    });
+  });
+</script>
+
+<!-- 🎨 Inline Style for Author Info & Comments -->
+<style>
+  .author-info {
+    background-color: var(--card-bg);
+    border-radius: 16px;
+    padding: 10px 18px;
+    display: flex;
+    align-items: center;
+    box-shadow: 0 2px 8px rgba(0, 255, 0, 0.2);
+    transition: all 0.3s ease-in-out;
+  }
+  .author-info:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 16px rgba(0, 255, 0, 0.3), 0 0 10px rgba(255, 0, 0, 0.3);
+  }
+  .author-info img {
+    border-radius: 50%;
+    border: 2px solid #00ff55;
+    width: 60px;
+    height: 60px;
+    margin-right: 12px;
+    box-shadow: 0 0 8px rgba(0, 255, 0, 0.3);
+  }
+  .author-name {
+    font-weight: 700;
+    color: #00b14f;
+    margin-bottom: 2px;
+  }
+  .author-profession {
+    color: var(--text-color);
+    font-weight: 500;
+    opacity: 0.9;
+  }
+  .comment-card {
+    transition: all 0.3s ease;
+  }
+  .comment-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 20px rgba(0, 255, 0, 0.25);
+  }
+</style>
+
+{% endblock %}
