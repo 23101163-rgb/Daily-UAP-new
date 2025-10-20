@@ -1,0 +1,132 @@
+{% extends 'news/base.html' %}
+{% block title %}Search Results - Daily UAP{% endblock %}
+{% block content %}
+
+<h2 class="mb-4">Search Results{% if query %} for "{{ query }}"{% endif %}</h2>
+
+<!-- Filter & Sort Form -->
+<form method="get" class="row g-2 mb-4">
+  <div class="col-md-4">
+    <input type="text" name="q" value="{{ query }}" class="form-control" placeholder="Search posts...">
+  </div>
+
+  <div class="col-md-3">
+    <select name="category" class="form-select">
+      <option value="all">All Categories</option>
+      {% for category in categories %}
+        <option value="{{ category.id }}" {% if category.id|stringformat:"s" == selected_category %}selected{% endif %}>
+          {{ category.name }}
+        </option>
+      {% endfor %}
+    </select>
+  </div>
+
+  <div class="col-md-3">
+    <select name="sort" class="form-select">
+      <option value="newest" {% if sort_option == "newest" %}selected{% endif %}>Newest First</option>
+      <option value="oldest" {% if sort_option == "oldest" %}selected{% endif %}>Oldest First</option>
+      <option value="most_commented" {% if sort_option == "most_commented" %}selected{% endif %}>Most Commented</option>
+    </select>
+  </div>
+
+  <div class="col-md-2">
+    <button class="btn btn-primary w-100" type="submit">Apply</button>
+  </div>
+</form>
+
+<!-- Results -->
+<div class="row">
+  {% for post in page_obj %}
+    <div class="col-md-4 mb-4">
+      <div class="card h-100 shadow-sm border-0">
+        {% if post.image %}
+          <img src="{{ post.image.url }}" class="card-img-top rounded-top" alt="{{ post.title }}">
+        {% endif %}
+        <div class="card-body">
+          <h5 class="card-title d-flex align-items-center">
+            {{ post.title }}
+            {% if user.is_authenticated and post.id in saved_post_ids %}
+              <span class="badge bg-success ms-2">💚 Saved</span>
+            {% endif %}
+          </h5>
+
+          <p class="card-text text-muted mb-1">
+            By <strong>{{ post.author.username }}</strong>
+            {% if post.author.profile.profession %}
+              — {{ post.author.profile.get_profession_display }}
+            {% endif %}
+          </p>
+
+          <p class="card-text">{{ post.content|truncatechars:120 }}</p>
+          <a href="{% url 'post_detail' post.pk %}" class="btn btn-outline-primary btn-sm">Read More</a>
+        </div>
+        <div class="card-footer text-muted small">
+          Published {{ post.published_date|date:"F j, Y" }}
+        </div>
+      </div>
+    </div>
+  {% empty %}
+    <p class="text-muted text-center mt-5">No results found.</p>
+  {% endfor %}
+</div>
+
+<!-- Pagination -->
+{% if page_obj.has_other_pages %}
+  <div class="d-flex justify-content-center mt-5">
+    <nav aria-label="Page navigation">
+      <ul class="pagination pagination-lg">
+        {% if page_obj.has_previous %}
+          <li class="page-item">
+            <a class="page-link bg-dark text-light border-0" href="?{% if query %}q={{ query }}&{% endif %}
+              {% if selected_category %}category={{ selected_category }}&{% endif %}
+              {% if sort_option %}sort={{ sort_option }}&{% endif %}
+              page={{ page_obj.previous_page_number }}">« Prev</a>
+          </li>
+        {% else %}
+          <li class="page-item disabled"><span class="page-link bg-secondary text-light border-0">« Prev</span></li>
+        {% endif %}
+
+        {% for num in page_obj.paginator.page_range %}
+          {% if num == page_obj.number %}
+            <li class="page-item active"><span class="page-link bg-primary border-0 text-light">{{ num }}</span></li>
+          {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+            <li class="page-item">
+              <a class="page-link bg-dark text-light border-0 hover-glow" href="?{% if query %}q={{ query }}&{% endif %}
+                {% if selected_category %}category={{ selected_category }}&{% endif %}
+                {% if sort_option %}sort={{ sort_option }}&{% endif %}
+                page={{ num }}">{{ num }}</a>
+            </li>
+          {% endif %}
+        {% endfor %}
+
+        {% if page_obj.has_next %}
+          <li class="page-item">
+            <a class="page-link bg-dark text-light border-0" href="?{% if query %}q={{ query }}&{% endif %}
+              {% if selected_category %}category={{ selected_category }}&{% endif %}
+              {% if sort_option %}sort={{ sort_option }}&{% endif %}
+              page={{ page_obj.next_page_number }}">Next »</a>
+          </li>
+        {% else %}
+          <li class="page-item disabled"><span class="page-link bg-secondary text-light border-0">Next »</span></li>
+        {% endif %}
+      </ul>
+    </nav>
+  </div>
+{% endif %}
+
+<style>
+  .pagination .page-link {
+    transition: all 0.3s ease;
+  }
+  .pagination .page-link:hover {
+    background-color: #0d6efd !important;
+    color: #fff !important;
+    transform: scale(1.05);
+  }
+  .pagination .active .page-link {
+    background-color: #0d6efd !important;
+    border: none;
+  }
+</style>
+
+{% endblock %}
