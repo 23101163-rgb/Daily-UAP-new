@@ -1,0 +1,80 @@
+{% extends 'news/base.html' %}
+{% block content %}
+<style>
+  .edit-container {
+    max-width: 750px;
+    margin: 60px auto;
+    background: rgba(0, 0, 0, 0.85);
+    border-radius: 12px;
+    padding: 30px 40px;
+    box-shadow: 0 0 25px rgba(0, 255, 136, 0.2);
+    color: #eaeaea;
+  }
+
+  .edit-container h2 {
+    color: #ff2a2a;
+    text-align: center;
+    text-shadow: 0 0 12px #ff2a2a;
+    margin-bottom: 25px;
+    font-weight: bold;
+  }
+
+  input, textarea, select {
+    background-color: rgba(0, 0, 0, 0.8);
+    border: 1px solid #00ff88;
+    border-radius: 8px;
+    color: #fff;
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 15px;
+    transition: all 0.3s ease;
+  }
+
+  input:focus, textarea:focus, select:focus {
+    border-color: #ff2a2a;
+    box-shadow: 0 0 10px #ff2a2a;
+    outline: none;
+  }
+
+  .btn-save {
+    display: block;
+    width: 100%;
+    background: linear-gradient(90deg, #00ff88, #009944);
+    color: black;
+    border: none;
+    font-weight: bold;
+    padding: 12px;
+    border-radius: 10px;
+    transition: all 0.3s ease;
+  }
+
+  .btn-save:hover {
+    background: #ff2a2a;
+    color: #fff;
+    box-shadow: 0 0 15px #ff2a2a;
+  }
+
+  .cancel-link {
+    display: block;
+    text-align: center;
+    margin-top: 15px;
+    color: #00ff88;
+    text-decoration: none;
+  }
+
+  .cancel-link:hover {
+    color: #ff2a2a;
+    text-shadow: 0 0 10px #ff2a2a;
+  }
+</style>
+
+<div class="edit-container">
+  <h2>✏️ Edit Post</h2>
+  <form method="POST" enctype="multipart/form-data">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit" class="btn-save">💾 Save Changes</button>
+  </form>
+  <a href="{% url 'author_dashboard' %}" class="cancel-link">← Back to Dashboard</a>
+</div>
+{% endblock %}
