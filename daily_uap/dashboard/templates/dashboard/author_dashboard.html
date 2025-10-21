@@ -1,0 +1,237 @@
+{% extends 'news/base.html' %}
+{% block content %}
+<style>
+  /* 🌟 Author Dashboard — Bangladeshi Flag Theme */
+  body.dark-mode {
+    background-color: #0b0b0b;
+    color: #eaeaea;
+  }
+
+  h2 {
+    color: #00ff88;
+    text-shadow: 0 0 10px #009944;
+  }
+
+  .stats-box {
+    text-align: center;
+    padding: 25px;
+    border-radius: 12px;
+    color: #fff;
+    font-weight: bold;
+    box-shadow: 0 0 10px rgba(0, 255, 136, 0.3);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+  }
+
+  .stats-box:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 0 20px rgba(255, 42, 42, 0.5);
+  }
+
+  .bg-green {
+    background: linear-gradient(145deg, #00ff88, #009944);
+  }
+
+  .bg-yellow {
+    background: linear-gradient(145deg, #ffcc00, #ffaa00);
+    color: black;
+  }
+
+  .bg-blue {
+    background: linear-gradient(145deg, #007bff, #0048ff);
+  }
+
+  .btn-create {
+    background: #00ff88;
+    color: #000;
+    font-weight: bold;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+  }
+
+  .btn-create:hover {
+    background: #ff2a2a;
+    color: white;
+    box-shadow: 0 0 15px #ff2a2a;
+  }
+
+  .table th {
+    background-color: rgba(0, 255, 136, 0.15);
+    color: #00ff88;
+  }
+
+  .table td a {
+    color: #00ff88;
+    font-weight: 500;
+    text-decoration: none;
+    transition: color 0.3s ease;
+  }
+
+  .table td a:hover {
+    color: #ff2a2a;
+    text-shadow: 0 0 10px #ff2a2a;
+  }
+
+  .badge-published {
+    background-color: #00ff88;
+    color: #000;
+    border-radius: 8px;
+    padding: 5px 10px;
+  }
+
+  .badge-pending {
+    background-color: #ffaa00;
+    color: #000;
+    border-radius: 8px;
+    padding: 5px 10px;
+  }
+
+  .btn-edit {
+    background-color: #00b050;
+    color: #fff;
+    border: none;
+    padding: 4px 10px;
+    border-radius: 5px;
+    transition: all 0.3s ease;
+  }
+
+  .btn-edit:hover {
+    background-color: #00ff88;
+    color: #000;
+    box-shadow: 0 0 10px #00ff88;
+  }
+
+  .btn-delete {
+    background-color: #ff2a2a;
+    color: #fff;
+    border: none;
+    padding: 4px 10px;
+    border-radius: 5px;
+    transition: all 0.3s ease;
+  }
+
+  .btn-delete:hover {
+    background-color: #ff6666;
+    box-shadow: 0 0 10px #ff2a2a;
+  }
+
+  .section-title {
+    margin-top: 30px;
+    color: #00ff88;
+    font-weight: bold;
+  }
+
+  .comments-section a {
+    color: #00ff88;
+    text-decoration: none;
+  }
+
+  .comments-section a:hover {
+    color: #ff2a2a;
+    text-shadow: 0 0 10px #ff2a2a;
+  }
+</style>
+
+<div class="container mt-4">
+  <h2>👋 Welcome, {{ profile.user.username }} (Author)</h2>
+
+  <!-- 📊 Stats Section -->
+  <div class="row mt-4 mb-3">
+    <div class="col-md-4">
+      <div class="stats-box bg-green">
+        Published<br><span class="fs-3">{{ published_count }}</span>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="stats-box bg-yellow">
+        Pending<br><span class="fs-3">{{ pending_count }}</span>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="stats-box bg-blue">
+        Total Posts<br><span class="fs-3">{{ total_count }}</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ➕ Create Button -->
+  <div class="d-flex justify-content-start mb-3">
+    <a href="{% url 'create_post' %}" class="btn btn-create">➕ Create New Post</a>
+  </div>
+
+  <!-- ✅ Published Posts -->
+  <h4 class="section-title">✅ Published Posts</h4>
+  {% if published_posts %}
+    <table class="table table-hover text-light align-middle">
+      <thead>
+        <tr>
+          <th>Title</th>
+          <th>Category</th>
+          <th>Date</th>
+          <th>Status</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for post in published_posts %}
+        <tr>
+          <td><a href="{% url 'post_detail' post.id %}">{{ post.title }}</a></td>
+          <td>{{ post.category.name }}</td>
+          <td>{{ post.published_date|date:"F d, Y" }}</td>
+          <td><span class="badge-published">Published</span></td>
+          <td>
+            <a href="{% url 'edit_post' post.id %}" class="btn-edit">Edit</a>
+            <a href="{% url 'delete_post' post.id %}" class="btn-delete">Delete</a>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% else %}
+    <p class="text-muted fst-italic">No published posts yet.</p>
+  {% endif %}
+
+  <!-- ⏳ Pending -->
+  <h4 class="section-title mt-4">⏳ Pending Approval</h4>
+  {% if pending_posts %}
+    <table class="table text-light align-middle">
+      <thead>
+        <tr>
+          <th>Title</th>
+          <th>Category</th>
+          <th>Date</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for post in pending_posts %}
+        <tr>
+          <td>{{ post.title }}</td>
+          <td>{{ post.category.name }}</td>
+          <td>{{ post.published_date|date:"F d, Y" }}</td>
+          <td><span class="badge-pending">Pending</span></td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% else %}
+    <p class="text-muted fst-italic">No pending posts right now.</p>
+  {% endif %}
+
+  <!-- 💬 Comments -->
+  <h4 class="section-title mt-4">💬 Recent Comments on Your Posts</h4>
+  <div class="comments-section">
+    {% if recent_comments %}
+      {% for comment in recent_comments %}
+        <p>
+          <strong>{{ comment.user.username }}</strong> on
+          <a href="{% url 'post_detail' comment.post.id %}">{{ comment.post.title }}</a> —
+          <small class="text-muted">{{ comment.created_at|date:"F d, Y H:i" }}</small><br>
+          <em>{{ comment.content }}</em>
+        </p>
+      {% endfor %}
+    {% else %}
+      <p class="text-muted fst-italic">No comments yet.</p>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}
